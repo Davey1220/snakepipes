@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 from glob import glob
-from distutils.core import setup, Command
-import distutils.command.install 
+import sys
+#from distutils.core import setup, Command
+#import distutils.command.install 
 import os.path
 
 # Set __version__
@@ -12,42 +14,44 @@ scripts = ['bin/snakePipes']
 for d in glob('snakePipes/workflows/*'):
     scripts.append(os.path.join(d, os.path.split(d)[1]))
 
+addData = {}
 
-class InstallCommand(Command):
-    description = "Installs the foo."
-    user_options = [
-        ('mpi-organisms', None, 'Insall the organism files.'),
-    ]
-    def initialize_options(self):
-        self.foo = None
-    def finalize_options(self):
-        assert self.foo in (None, 'myFoo', 'myFoo2'), 'Invalid foo!'
-    def run(self):
-        print("test")
+if "--addOrganismFiles" in sys.argv:
+    addData = {'snakePipes': ['shared/organisms/*.yaml']}
+    sys.argv.remove("--addOrganismFiles")
 
-class BuildPyCommand(distutils.command.install.install):
-    user_options = distutils.command.install.install.user_options + [
-        ('foo=', None, 'Insall the organism files.'),
-    ]
-    def initialize_options(self):
-        self.foo = None
-    def finalize_options(self):
-        assert self.foo in (None, 'myFoo', 'myFoo2'), 'Invalid foo!'
-    def run(self):
-        distutils.command.install.install.run(self)
-        print("test")
+# class BuildPyCommand(install):
+#     addData
+#     user_options = install.user_options + [
+#         ('addOrganismFiles', None, 'Install the organism files.'),
+#     ]
+#     def initialize_options(self):
+#         install.initialize_options(self)   
+#         self.addOrganismFiles = None
+#     def finalize_options(self):
+#         print(self.addOrganismFiles)
+#         install.finalize_options(self)
+#         if self.addOrganismFiles==1:
+#             self.addData = {'snakePipes': ['shared/organisms/*.yaml']}
+#     def run(self):
+#         install.run(self)
+#         #print(self.addOrganismFiles)
+#         if self.addOrganismFiles==1:
+#             self.addData = {'snakePipes': ['shared/organisms/*.yaml']}
+#         print(self.addData)
 
 setup(
+   # cmdclass={
+   #     'install': BuildPyCommand
+   # },
     name='snakePipes',
     version=__version__,  # noqa: F821
     scripts=scripts,
     packages=find_packages(),
     include_package_data=True,
+    package_data=addData,
     url='https://github.com/maxplanck-ie/snakepipes',
     license='GPL v3',
     description='Snakemake workflows and wrappers for NGS data processing from the MPI-IE',
     zip_safe=False,
-    cmdclass={
-        'install': BuildPyCommand
-    }
 )
